@@ -20,11 +20,10 @@ import {
   ChevronDown,
   UserCircle,
   Check,
-  Printer,
-  Calendar,
   Download,
   ArrowUpDown,
   RotateCcw,
+  Calendar,
   Info,
   HelpCircle,
   AlertCircle,
@@ -425,21 +424,6 @@ export default function App() {
     });
   };
 
-  const handlePrint = async () => {
-    const wasPreviewing = isPreviewingPDF;
-    if (!wasPreviewing) {
-      setIsPreviewingPDF(true);
-      // Wait for React to render the preview state
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-    
-    window.print();
-    
-    if (!wasPreviewing) {
-      setIsPreviewingPDF(false);
-    }
-  };
-
   const handleDownloadPDF = async () => {
     if (!historyRef.current || !activeAccount) return;
     setIsDownloading(true);
@@ -450,36 +434,50 @@ export default function App() {
     await new Promise(resolve => setTimeout(resolve, 250));
 
     try {
-      const html2pdf = (await import('html2pdf.js' as any)).default;
-      const element = historyRef.current;
+      console.log('Starting PDF generation workflow...');
+      // @ts-ignore - html2pdf might not have perfect types
+      const html2pdfPromise = import('html2pdf.js').then(m => m.default);
       
-      // Add class to remove min-height and shadow during capture
+      // Safety timeout for loading the library
+      const html2pdf = await Promise.race([
+        html2pdfPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Library load timeout')), 8000))
+      ]) as any;
+      
+      console.log('Library loaded successfully');
+      
+      const element = historyRef.current;
+      if (!element) return;
+      
       element.classList.add('pdf-exporting');
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       const opt = {
-        margin: 0,
+        margin: 10,
         filename: selectedMemberFilter 
           ? `${activeAccount.payeeName.replace(/\s+/g, '_')}_${historyStats.memberSummary.find(m => m.id === selectedMemberFilter)?.name.replace(/\s+/g, '_')}_Report_${selectedHistoryYear}.pdf`
           : `${activeAccount.payeeName.replace(/\s+/g, '_')}_Report_${selectedHistoryYear}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 2, 
+          scale: 1.5,
           useCORS: true, 
-          scrollY: 0,
+          logging: false,
           scrollX: 0,
-          windowWidth: 794,
-          logging: false
+          scrollY: 0,
+          windowWidth: 1000,
+          backgroundColor: '#ffffff'
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const, compress: true },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      await html2pdf().from(element).set(opt).save();
-      
-      // Cleanup
+      await html2pdf().set(opt).from(element).save();
+      console.log('PDF saved successfully');
       element.classList.remove('pdf-exporting');
     } catch (err) {
-      console.error('PDF generation failed:', err);
+      console.error('PDF export error:', err);
+      // Fallback: If PDF fails, encourage using Print
+      console.warn('PDF export failed. Try again or check network.');
     } finally {
       if (!wasPreviewing) setIsPreviewingPDF(false);
       setIsDownloading(false);
@@ -925,8 +923,9 @@ export default function App() {
 
               <motion.div
                 key="history"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={isPreviewingPDF ? false : { opacity: 0, y: 10 }}
+                animate={isPreviewingPDF ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+                transition={isPreviewingPDF ? { duration: 0 } : { duration: 0.3 }}
                 exit={{ opacity: 0, y: -10 }}
                 className={cn(
                   "space-y-6 bg-white rounded-2xl",
@@ -1172,13 +1171,6 @@ export default function App() {
                       <span>Preview</span>
                     </button>
                     <button 
-                      onClick={handlePrint}
-                      className="flex w-full sm:w-auto items-center justify-center sm:justify-start gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-600 hover:bg-indigo-100 transition-all active:scale-95 border border-indigo-100"
-                    >
-                      <Printer size={16} />
-                      <span>Print</span>
-                    </button>
-                    <button 
                       onClick={handleDownloadPDF}
                       disabled={isDownloading}
                       className="flex w-full sm:w-auto items-center justify-center sm:justify-start gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-600 hover:bg-emerald-100 transition-all active:scale-95 border border-emerald-100 disabled:opacity-50"
@@ -1239,7 +1231,7 @@ export default function App() {
                                 Members are automatically sorted by their contribution amount (highest to lowest). Members who have <span className="font-bold underline">Left Account</span> are kept at the bottom for record-keeping.
                               </p>
                               <p className="text-[10px] text-indigo-800 leading-relaxed mt-1">
-                                <span className="font-bold">Tip:</span> Click a member's name to filter the view. You can then use the <span className="font-bold">Print</span> or <span className="font-bold">Download</span> buttons to generate a report showing only their specific payments for the year.
+                                <span className="font-bold">Tip:</span> Click a member's name to filter the view. You can then use the <span className="font-bold">Download</span> button to generate a report showing only their specific payments for the year.
                               </p>
                             </div>
                             <button 
