@@ -452,17 +452,37 @@ export default function App() {
     try {
       const html2pdf = (await import('html2pdf.js' as any)).default;
       const element = historyRef.current;
+      
+      // Add class to remove min-height and shadow during capture
+      element.classList.add('pdf-exporting');
+      
       const opt = {
-        margin: 10,
+        margin: 0,
         filename: selectedMemberFilter 
           ? `${activeAccount.payeeName.replace(/\s+/g, '_')}_${historyStats.memberSummary.find(m => m.id === selectedMemberFilter)?.name.replace(/\s+/g, '_')}_Report_${selectedHistoryYear}.pdf`
           : `${activeAccount.payeeName.replace(/\s+/g, '_')}_Report_${selectedHistoryYear}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, windowWidth: 1200 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          scrollY: 0,
+          scrollX: 0,
+          windowWidth: 794,
+          logging: false
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      await html2pdf().from(element).set(opt).save();
+      await html2pdf().from(element).set(opt).toPdf().get('pdf').then((pdf: any) => {
+        // Double check if last page is blank and delete if so (advanced optimization)
+        const totalPages = pdf.internal.getNumberOfPages();
+        // This is a bit complex for jsPDF in html2pdf but let's stick to the basics first
+      }).save();
+      
+      // Cleanup
+      element.classList.remove('pdf-exporting');
     } catch (err) {
       console.error('PDF generation failed:', err);
     } finally {
@@ -968,11 +988,11 @@ export default function App() {
                     <table className="statement-table">
                       <thead>
                         <tr>
-                          <th className="w-full">Description / Account</th>
-                          <th className="whitespace-nowrap">Paid Date</th>
-                          <th className="whitespace-nowrap">Due Date</th>
-                          <th className="text-right">Total</th>
-                          <th className="text-right">Amount Paid</th>
+                          <th style={{ width: '35%' }}>Description / Account</th>
+                          <th style={{ width: '15%' }}>Paid Date</th>
+                          <th style={{ width: '15%' }}>Due Date</th>
+                          <th style={{ width: '15%' }} className="text-right">Total</th>
+                          <th style={{ width: '20%' }} className="text-right">Amount Paid</th>
                         </tr>
                       </thead>
                       <tbody>
