@@ -1,0 +1,6 @@
+{
+  "name": "Byl",
+  "description": "Smart bill management and splitting. Features monthly tracking, yearly reporting, and local persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
