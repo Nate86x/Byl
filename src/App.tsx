@@ -425,8 +425,19 @@ export default function App() {
     });
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    const wasPreviewing = isPreviewingPDF;
+    if (!wasPreviewing) {
+      setIsPreviewingPDF(true);
+      // Wait for React to render the preview state
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    
     window.print();
+    
+    if (!wasPreviewing) {
+      setIsPreviewingPDF(false);
+    }
   };
 
   const handleDownloadPDF = async () => {
@@ -436,7 +447,7 @@ export default function App() {
     if (!wasPreviewing) setIsPreviewingPDF(true);
     
     // Brief delay to allow React to render the preview state before capturing
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 250));
 
     try {
       const html2pdf = (await import('html2pdf.js' as any)).default;
@@ -876,7 +887,7 @@ export default function App() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="flex justify-between items-center mb-6 max-w-[210mm] mx-auto w-full"
+                    className="flex justify-between items-center mb-6 max-w-[210mm] mx-auto w-full no-print"
                   >
                     <div className="flex items-center gap-3">
                       <div className="bg-indigo-600 p-2 rounded-xl shadow-lg">
