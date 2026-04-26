@@ -465,7 +465,6 @@ export default function App() {
         html2canvas: { 
           scale: 2, 
           useCORS: true, 
-          letterRendering: true,
           scrollY: 0,
           scrollX: 0,
           windowWidth: 794,
@@ -475,11 +474,7 @@ export default function App() {
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      await html2pdf().from(element).set(opt).toPdf().get('pdf').then((pdf: any) => {
-        // Double check if last page is blank and delete if so (advanced optimization)
-        const totalPages = pdf.internal.getNumberOfPages();
-        // This is a bit complex for jsPDF in html2pdf but let's stick to the basics first
-      }).save();
+      await html2pdf().from(element).set(opt).save();
       
       // Cleanup
       element.classList.remove('pdf-exporting');
