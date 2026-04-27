@@ -9,7 +9,8 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "https://nate86x.github.io/Byl/",
+  "start_url": "/Byl/",
+  "scope": "/Byl/",
   "display": "standalone",
   "theme_color": "#2563EB",
   "background_color": "#2563EB"
