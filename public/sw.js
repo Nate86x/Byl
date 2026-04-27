@@ -3,7 +3,7 @@ const ASSETS = [
   '/Byl/',
   '/Byl/index.html',
   '/Byl/manifest.json',
-  '/Byl/public/logo-rounded.png'
+  '/Byl/logo-rounded.png'
 ];
 
 self.addEventListener('install', (event) => {
