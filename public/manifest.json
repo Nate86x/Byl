@@ -3,7 +3,7 @@
   "name": "Byl - Bill Tracker",
   "icons": [
     {
-      "src": "/Byl/public/logo192.png",
+      "src": "/Byl/public/logo-rounded.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
