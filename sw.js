@@ -2,7 +2,7 @@ const CACHE_NAME = 'byl-v1';
 const ASSETS = [
   '/Byl/',
   '/Byl/index.html',
-  '/Byl/public/manifest.json',
+  '/Byl/manifest.json',
   '/Byl/public/logo-rounded.png'
 ];
 
