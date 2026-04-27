@@ -3,14 +3,14 @@
   "name": "Byl - Bill Tracker",
   "icons": [
     {
-      "src": "/Byl/public/logo-rounded.png",
+      "src": "logo-rounded.png",
       "type": "image/png",
       "sizes": "1024x1024",
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/Byl/",
-  "scope": "/Byl/",
+  "start_url": ".",
+  "scope": "./",
   "display": "standalone",
   "theme_color": "#2563EB",
   "background_color": "#2563EB"
